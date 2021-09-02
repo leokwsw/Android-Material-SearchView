@@ -191,7 +191,8 @@ class MaterialSearchView : CardView {
     binding.editText.setText(queryText)
   }
 
-  fun setSearchRecyclerAdapter(adapter: Adapter<RecyclerView.ViewHolder>) {
+  // Adapter<VH extends ViewHolder>
+  fun setSearchRecyclerAdapter(adapter: Adapter<*>) {
     binding.recycler.adapter = adapter
     checkForAdapter()
   }
