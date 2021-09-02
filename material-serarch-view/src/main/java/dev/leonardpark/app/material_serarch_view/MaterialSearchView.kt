@@ -63,7 +63,7 @@ class MaterialSearchView : CardView {
     val a = context.theme.obtainStyledAttributes(attrs, R.styleable.MaterialSearchView, 0, 0)
 
     val inflater = LayoutInflater.from(context)
-    binding = ViewSearchBinding.bind(inflater.inflate(R.layout.view_search, this))
+    binding = ViewSearchBinding.inflate(inflater, this, true)
     animateSearchView = a.getBoolean(R.styleable.MaterialSearchView_search_animate, true)
     searchMenuPosition = a.getInteger(R.styleable.MaterialSearchView_search_menu_position, 0)
     searchHint = a.getString(R.styleable.MaterialSearchView_search_hint)
@@ -191,7 +191,6 @@ class MaterialSearchView : CardView {
     binding.editText.setText(queryText)
   }
 
-  // Adapter<VH extends ViewHolder>
   fun setSearchRecyclerAdapter(adapter: Adapter<*>) {
     binding.recycler.adapter = adapter
     checkForAdapter()
