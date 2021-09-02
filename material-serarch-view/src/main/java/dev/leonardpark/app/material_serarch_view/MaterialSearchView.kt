@@ -63,17 +63,18 @@ class MaterialSearchView : CardView {
     val a = context.theme.obtainStyledAttributes(attrs, R.styleable.MaterialSearchView, 0, 0)
 
     val inflater = LayoutInflater.from(context)
+    val isDark = Utils.isUsingNightModeResources(context)
     binding = ViewSearchBinding.inflate(inflater, this, true)
     animateSearchView = a.getBoolean(R.styleable.MaterialSearchView_search_animate, true)
     searchMenuPosition = a.getInteger(R.styleable.MaterialSearchView_search_menu_position, 0)
     searchHint = a.getString(R.styleable.MaterialSearchView_search_hint)
     searchTextColor = a.getColor(
       R.styleable.MaterialSearchView_search_text_color,
-      ContextCompat.getColor(context, android.R.color.black)
+      ContextCompat.getColor(context, if(isDark) android.R.color.white else android.R.color.black)
     )
     searchIconColor = a.getColor(
       R.styleable.MaterialSearchView_search_icon_color,
-      ContextCompat.getColor(context, android.R.color.black)
+      ContextCompat.getColor(context, if(isDark) android.R.color.white else android.R.color.black)
     )
 
     binding.imgBack.setOnClickListener(mOnClickListener)
