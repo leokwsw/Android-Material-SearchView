@@ -1,4 +1,4 @@
-package dev.leonardpark.app.material_serarch_view
+package dev.leonardpark.lib.material_search_view
 
 import android.content.Context
 import android.content.res.Configuration

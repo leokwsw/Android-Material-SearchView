@@ -9,18 +9,26 @@
   <com.google.android.material.appbar.AppBarLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:theme="@style/Theme.MaterailSearchView.AppBarOverlay">
+    android:theme="@style/Theme.MaterialSearchView.AppBarOverlay">
 
     <androidx.appcompat.widget.Toolbar
       android:id="@+id/toolbar"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       android:background="?attr/colorPrimary"
-      app:popupTheme="@style/Theme.MaterailSearchView.PopupOverlay" />
+      app:popupTheme="@style/Theme.MaterialSearchView.PopupOverlay" />
 
   </com.google.android.material.appbar.AppBarLayout>
 
-  <include layout="@layout/content_main" />
+  <dev.leonardpark.lib.material_search_view.MaterialSearchView
+    android:id="@+id/search"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:layout_margin="4dp"
+    android:visibility="invisible"
+    app:cardElevation="4dp"
+    app:search_hint="Search"
+    app:search_menu_position="0" />
 
   <com.google.android.material.floatingactionbutton.FloatingActionButton
     android:id="@+id/fab"

@@ -1,4 +1,4 @@
-package dev.leonardpark.app.material_serarch_view
+package dev.leonardpark.lib.material_search_view
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -11,17 +11,18 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewAnimationUtils
-import android.widget.EditText
-import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
-import dev.leonardpark.app.material_serarch_view.databinding.ViewSearchBinding
+import dev.leonardpark.lib.material_search_view.databinding.SearchLayoutBinding
 import kotlin.math.hypot
 
 class MaterialSearchView : CardView {
@@ -39,9 +40,10 @@ class MaterialSearchView : CardView {
   private var hasAdapter = false
   private var hideSearch = false
 
-  private lateinit var binding: ViewSearchBinding
+  private lateinit var binding: SearchLayoutBinding
   private var listenerQuery: OnQueryTextListener? = null
   private var visibilityListener: OnVisibilityListener? = null
+  private var micClickListener: OnMicClickListener? = null
 
   constructor(context: Context) : super(context) {
     init(context, null)
@@ -64,21 +66,22 @@ class MaterialSearchView : CardView {
 
     val inflater = LayoutInflater.from(context)
     val isDark = Utils.isUsingNightModeResources(context)
-    binding = ViewSearchBinding.inflate(inflater, this, true)
+    binding = SearchLayoutBinding.inflate(inflater, this, true)
     animateSearchView = a.getBoolean(R.styleable.MaterialSearchView_search_animate, true)
     searchMenuPosition = a.getInteger(R.styleable.MaterialSearchView_search_menu_position, 0)
     searchHint = a.getString(R.styleable.MaterialSearchView_search_hint)
     searchTextColor = a.getColor(
       R.styleable.MaterialSearchView_search_text_color,
-      ContextCompat.getColor(context, if(isDark) android.R.color.white else android.R.color.black)
+      ContextCompat.getColor(context, if (isDark) android.R.color.white else android.R.color.black)
     )
     searchIconColor = a.getColor(
       R.styleable.MaterialSearchView_search_icon_color,
-      ContextCompat.getColor(context, if(isDark) android.R.color.white else android.R.color.black)
+      ContextCompat.getColor(context, if (isDark) android.R.color.white else android.R.color.black)
     )
 
     binding.imgBack.setOnClickListener(mOnClickListener)
     binding.imgClear.setOnClickListener(mOnClickListener)
+    binding.imgMic.setOnClickListener(mOnClickListener)
     binding.editText.addTextChangedListener(mTextWatcher)
     binding.editText.setOnEditorActionListener(mOnEditorActionListener)
 
@@ -104,11 +107,14 @@ class MaterialSearchView : CardView {
     checkForAdapter()
   }
 
-  private val mOnClickListener = View.OnClickListener { v ->
-    if (v === binding.imgClear) {
-      setSearchText(null)
-    } else if (v === binding.imgBack) {
-      hideSearch()
+  private val mOnClickListener = OnClickListener { v ->
+    when (v) {
+      binding.imgClear -> setSearchText(null)
+      binding.imgBack -> hideSearch()
+      binding.imgMic -> {
+        Log.d("testmo", "mo?")
+        micClickListener?.onMicClick()
+      }
     }
   }
 
@@ -124,11 +130,10 @@ class MaterialSearchView : CardView {
     override fun afterTextChanged(s: Editable) {}
   }
 
-  private val mOnEditorActionListener =
-    TextView.OnEditorActionListener { v, actionId, event ->
-      onSubmitQuery()
-      true
-    }
+  private val mOnEditorActionListener = TextView.OnEditorActionListener { _, _, _ ->
+    onSubmitQuery()
+    true
+  }
 
   private fun submitText(s: CharSequence) {
     mUserQuery = binding.editText.text
@@ -149,6 +154,11 @@ class MaterialSearchView : CardView {
   private fun updateClearButton() {
     val hasText = !TextUtils.isEmpty(binding.editText.text)
     binding.imgClear.visibility = if (hasText) VISIBLE else GONE
+    binding.imgMic.visibility = if (micClickListener != null && hasText) {
+      GONE
+    } else {
+      VISIBLE
+    }
   }
 
   fun setQuery(query: CharSequence?, submit: Boolean) {
@@ -210,7 +220,7 @@ class MaterialSearchView : CardView {
   fun showSearch() {
     hideSearch = false
     checkForAdapter()
-    visibility = View.VISIBLE
+    visibility = VISIBLE
     if (animateSearchView) if (Build.VERSION.SDK_INT >= 21) {
       val animatorShow = ViewAnimationUtils.createCircularReveal(
         this,  // view
@@ -223,14 +233,14 @@ class MaterialSearchView : CardView {
           super.onAnimationEnd(animation)
           visibilityListener?.onOpen()
           if (hasAdapter) {
-            binding.linearItemsHolder.visibility = View.VISIBLE
+            binding.linearItemsHolder.visibility = VISIBLE
           }
         }
       })
       animatorShow.start()
     } else {
       if (hasAdapter) {
-        binding.linearItemsHolder.visibility = View.VISIBLE
+        binding.linearItemsHolder.visibility = VISIBLE
       }
     }
   }
@@ -238,7 +248,7 @@ class MaterialSearchView : CardView {
   fun hideSearch() {
     checkForAdapter()
     if (hasAdapter) {
-      binding.linearItemsHolder.setVisibility(View.GONE)
+      binding.linearItemsHolder.visibility = GONE
     }
     if (animateSearchView) {
       if (Build.VERSION.SDK_INT >= 21) {
@@ -296,11 +306,13 @@ class MaterialSearchView : CardView {
   /**
    * Get views
    */
-  fun getEditText(): EditText = binding.editText
+  fun getEditText(): AppCompatEditText = binding.editText
 
-  fun getImageBack(): ImageView = binding.imgBack
+  fun getImageBack(): AppCompatImageView = binding.imgBack
 
-  fun getImageClear(): ImageView = binding.imgClear
+  fun getImageClear(): AppCompatImageView = binding.imgClear
+
+  fun getImageMic(): AppCompatImageView = binding.imgMic
 
   fun getRecyclerView(): RecyclerView = binding.recycler
 
@@ -316,7 +328,7 @@ class MaterialSearchView : CardView {
     fun onQueryTextChange(newText: String?): Boolean
   }
 
-  fun setOnVisibilityListener(visibilityListener: OnVisibilityListener) {
+  fun addOnVisibilityListener(visibilityListener: OnVisibilityListener) {
     this.visibilityListener = visibilityListener
   }
 
@@ -325,15 +337,23 @@ class MaterialSearchView : CardView {
     fun onClose(): Boolean
   }
 
+  fun addOnMicClickListener(micClickListener: OnMicClickListener) {
+    this.micClickListener = micClickListener
+  }
+
+  interface OnMicClickListener {
+    fun onMicClick()
+  }
+
   /**
    * Helpers
    */
-  fun setDrawableTint(resDrawable: Drawable, resColor: Int) {
+  private fun setDrawableTint(resDrawable: Drawable, resColor: Int) {
     resDrawable.colorFilter = PorterDuffColorFilter(resColor, PorterDuff.Mode.SRC_ATOP)
     resDrawable.mutate()
   }
 
-  fun convertDpToPixel(dp: Float): Float {
+  private fun convertDpToPixel(dp: Float): Float {
     return dp * (context.resources.displayMetrics.densityDpi / 160f)
   }
 
